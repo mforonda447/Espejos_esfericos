@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espejos Esféricos: Cóncavo y Convexo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f1a;
+    --surface: #16182b;
+    --surface2: #1e2138;
+    --border: rgba(120,140,255,0.15);
+    --accent1: #7c8cff;
+    --accent2: #ff6b9d;
+    --accent3: #4ecdc4;
+    --accent4: #ffd166;
+    --text: #e8eaf6;
+    --text-muted: #8892b0;
+    --glow1: rgba(124,140,255,0.3);
+    --glow2: rgba(255,107,157,0.3);
+    --glow3: rgba(78,205,196,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── COVER ─── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, rgba(124,140,255,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 70%, rgba(255,107,157,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 80%, rgba(78,205,196,0.1) 0%, transparent 60%);
+  }
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+    opacity: var(--op, 0.6);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: var(--op,0.6); transform: scale(1); }
+    50% { opacity: 0.1; transform: scale(0.5); }
+  }
+
+  .cover-inner { position: relative; z-index: 2; max-width: 800px; }
+
+  .cover-badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 1.5rem;
+  }
+
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 0%, var(--accent1) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cover-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    font-style: italic;
+  }
+
+  .folder-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 2.5rem;
+    margin-top: 2rem;
+    display: inline-block;
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+  .folder-card::before {
+    content: '📁 Integrantes del Grupo';
+    position: absolute;
+    top: -14px; left: 50%; transform: translateX(-50%);
+    background: var(--surface);
+    padding: 0 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+  }
+
+  .members {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.7rem 2rem;
+    text-align: left;
+    margin-top: 0.5rem;
+  }
+  .member {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 500;
+  }
+  .member-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cover-scroll {
+    position: absolute;
+    bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.4rem; color: var(--text-muted); font-size: 0.8rem;
+    animation: bounce 2s ease-in-out infinite;
+    z-index: 2;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ─── SECTION LAYOUT ─── */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  .section-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent3); margin-bottom: 1rem;
+  }
+  .section-label::before { content: ''; width: 30px; height: 2px; background: var(--accent3); }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--accent1);
+  }
+
+  p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.97rem; }
+  p strong { color: var(--text); font-weight: 600; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* ─── THEORY CARDS ─── */
+  .theory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .theory-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .theory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .theory-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--card-accent, var(--accent1));
+  }
+  .card-icon {
+    font-size: 2rem; margin-bottom: 0.8rem;
+  }
+
+  .formula-inline {
+    display: inline-block;
+    background: rgba(124,140,255,0.1);
+    border: 1px solid rgba(124,140,255,0.25);
+    border-radius: 8px;
+    padding: 0.2rem 0.6rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--accent1);
+  }
+
+  .info-box {
+    background: linear-gradient(135deg, rgba(78,205,196,0.08) 0%, rgba(124,140,255,0.08) 100%);
+    border: 1px solid rgba(78,205,196,0.25);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 0.93rem;
+  }
+  .info-box .info-title {
+    font-weight: 700; color: var(--accent3); margin-bottom: 0.4rem;
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  .law-block {
+    border-left: 3px solid var(--accent1);
+    padding: 0.8rem 1.2rem;
+    margin: 1rem 0;
+    background: rgba(124,140,255,0.06);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  /* ─── SIMULATION WRAPPER ─── */
+  .sim-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .sim-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 80% 20%, var(--glow1), transparent 70%);
+    pointer-events: none;
+  }
+
+  .sim-header {
+    display: flex; align-items: center; gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .sim-tag {
+    background: rgba(124,140,255,0.15);
+    border: 1px solid rgba(124,140,255,0.3);
+    border-radius: 100px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent1);
+  }
+
+  canvas {
+    display: block;
+    border-radius: 12px;
+    background: #0a0b14;
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    cursor: crosshair;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.2rem;
+    align-items: center;
+  }
+  .ctrl-group {
+    display: flex; align-items: center; gap: 0.6rem;
+    flex: 1; min-width: 200px;
+  }
+  .ctrl-group label {
+    font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+    white-space: nowrap; min-width: 100px;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    outline: none;
+    flex: 1;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent1);
+    box-shadow: 0 0 8px var(--glow1);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .val-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent1);
+    min-width: 45px;
+    text-align: center;
+  }
+
+  .readout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1.2rem;
+    margin-top: 1rem;
+    display: flex; flex-wrap: wrap; gap: 0.8rem 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.83rem;
+  }
+  .readout span { color: var(--text-muted); }
+  .readout strong { color: var(--accent4); }
+
+  .btn-row {
+    display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;
+  }
+  .btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent1); color: var(--accent1); }
+  .btn.active { background: rgba(124,140,255,0.2); border-color: var(--accent1); color: var(--accent1); }
+
+  /* ─── FORMULA TABLE ─── */
+  .formula-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.4rem;
+    margin: 1.5rem 0;
+  }
+  .formula-table thead th {
+    text-align: left;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    background: var(--surface2);
+  }
+  .formula-table thead th:first-child { border-radius: 8px 0 0 8px; }
+  .formula-table thead th:last-child { border-radius: 0 8px 8px 0; }
+
+  .formula-table tbody tr {
+    background: var(--surface);
+    transition: background 0.2s;
+  }
+  .formula-table tbody tr:hover { background: var(--surface2); }
+  .formula-table tbody td {
+    padding: 0.9rem 1rem;
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .formula-table tbody td:first-child {
+    border-left: 1px solid var(--border);
+    border-radius: 8px 0 0 8px;
+    color: var(--accent4); font-weight: 700;
+  }
+  .formula-table tbody td:last-child {
+    border-right: 1px solid var(--border);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-muted); font-size: 0.85rem;
+  }
+  .formula-table .formula-cell {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent1);
+    font-size: 0.95rem;
+  }
+
+  /* ─── GLOSSARY ─── */
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .gloss-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .gloss-item:hover { border-color: var(--accent1); transform: translateX(4px); }
+  .gloss-term {
+    font-weight: 700; color: var(--accent1);
+    font-size: 0.95rem; margin-bottom: 0.3rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .gloss-term::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent1); flex-shrink: 0; }
+  .gloss-def { font-size: 0.88rem; color: var(--text-muted); }
+
+  /* ─── CASES SECTION ─── */
+  .cases-tabs {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;
+  }
+  .case-tab {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .case-tab.active { background: rgba(124,140,255,0.2); border-color: var(--accent1); color: var(--accent1); }
+
+  .case-panel { display: none; }
+  .case-panel.active { display: block; }
+  .case-info {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-top: 1rem;
+  }
+  .case-prop {
+    background: var(--surface2);
+    border-radius: 8px; padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+  .case-prop .label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; }
+  .case-prop .value { color: var(--accent4); font-weight: 600; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  footer strong { color: var(--accent3); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .members { grid-template-columns: 1fr; }
+    .case-info { grid-template-columns: 1fr; }
+    .ctrl-group label { min-width: 80px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ COVER ════════════════ -->
+<div class="cover">
+  <div class="stars" id="stars"></div>
+  <div class="cover-inner">
+    <div class="cover-badge">🔬 Física · Óptica Geométrica</div>
+    <h1>Espejos Esféricos:<br>Cóncavo y Convexo</h1>
+    <p class="cover-subtitle">Cuadernillo interactivo con simulaciones · 2025</p>
+    <div class="folder-card">
+      <div class="members">
+        <div class="member"><span class="member-dot" style="background:#7c8cff"></span>Mariana Alzate</div>
+        <div class="member"><span class="member-dot" style="background:#ff6b9d"></span>Manuela Foronda</div>
+        <div class="member"><span class="member-dot" style="background:#4ecdc4"></span>Camila Marín</div>
+        <div class="member"><span class="member-dot" style="background:#ffd166"></span>Eddier Bohórquez</div>
+      </div>
+    </div>
+  </div>
+  <div class="cover-scroll">↓ Explorar</div>
+</div>
+
+<!-- ════════════════ INTRO / THEORY ════════════════ -->
+<div class="page">
+  <div class="section-label">Fundamentos Teóricos</div>
+  <h2>¿Qué es un espejo esférico?</h2>
+  <p>Un <strong>espejo esférico</strong> es un sistema óptico constituido por una porción de superficie esférica recubierta por un material altamente reflectante. A diferencia de los espejos planos, su curvatura hace que los rayos de luz converjan o diverjan, creando imágenes de distintas características según la posición del objeto.</p>
+  <p>Si la superficie reflectante está en la cara <strong>interior</strong> de la esfera, el espejo es <strong>cóncavo (convergente)</strong>; si está en la cara <strong>exterior</strong>, el espejo es <strong>convexo (divergente)</strong>.</p>
+
+  <div class="theory-grid">
+    <div class="theory-card" style="--card-accent:#7c8cff">
+      <div class="card-icon">🔵</div>
+      <h3>Centro de curvatura C</h3>
+      <p>Es el centro geométrico de la esfera de la cual se ha tomado el casquete que forma el espejo. Todos los radios del espejo apuntan hacia C.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#ff6b9d">
+      <div class="card-icon">📏</div>
+      <h3>Radio de curvatura r</h3>
+      <p>Es el radio de la esfera de la que procede el espejo. Determina cuánto de "curvo" es el espejo. Su relación con la distancia focal es <span class="formula-inline">f = r/2</span>.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#4ecdc4">
+      <div class="card-icon">✦</div>
+      <h3>Foco F</h3>
+      <p>Punto del eje principal donde convergen (cóncavo) o del que parecen divergir (convexo) todos los rayos paralelos al eje tras reflejarse. Está a distancia focal <span class="formula-inline">f</span> del vértice.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#ffd166">
+      <div class="card-icon">⬆</div>
+      <h3>Vértice V</h3>
+      <p>Centro geométrico del espejo; punto donde el eje principal intersecta la superficie reflectante. Es el origen del sistema de referencia para las convenciones de signo.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#a78bfa">
+      <div class="card-icon">➡</div>
+      <h3>Eje principal</h3>
+      <p>Línea recta que une el centro de curvatura C con el vértice V. Las distancias medidas a la derecha (frente al espejo) son positivas; a la izquierda, negativas.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#34d399">
+      <div class="card-icon">📐</div>
+      <h3>Distancia focal f</h3>
+      <p>Para espejos cóncavos: <strong>f &gt; 0</strong> (positiva). Para espejos convexos: <strong>f &lt; 0</strong> (negativa). Se puede determinar experimentalmente observando el punto de convergencia de rayos paralelos.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── TIPOS ─── -->
+  <div class="section-label">Clasificación</div>
+  <h2>Tipos de Espejos Esféricos</h2>
+
+  <div class="theory-grid">
+    <div class="theory-card" style="--card-accent:#7c8cff">
+      <div class="card-icon">🪞</div>
+      <h3>Espejo Cóncavo (Convergente)</h3>
+      <p>La superficie reflectante está curvada <strong>hacia adentro</strong>. Los rayos de luz paralelos al eje principal convergen en el foco real F, que se encuentra frente al espejo.</p>
+      <p>Pueden formar <strong>imágenes reales e invertidas</strong> (cuando el objeto está más allá del foco) o <strong>virtuales y derechas</strong> (cuando el objeto está entre F y V).</p>
+      <div class="info-box" style="margin-top:0.8rem">
+        <div class="info-title">Aplicaciones</div>
+        Telescopios reflectores, faros de automóvil, antenas parabólicas, microscopios, láseres.
+      </div>
+    </div>
+    <div class="theory-card" style="--card-accent:#ff6b9d">
+      <div class="card-icon">🔮</div>
+      <h3>Espejo Convexo (Divergente)</h3>
+      <p>La superficie reflectante está curvada <strong>hacia afuera</strong>. Los rayos paralelos al eje se reflejan divergiendo, como si proviniesen de un foco virtual detrás del espejo.</p>
+      <p>Siempre forman imágenes <strong>virtuales, derechas y de menor tamaño</strong>, independientemente de la posición del objeto.</p>
+      <div class="info-box" style="margin-top:0.8rem; border-color:rgba(255,107,157,0.3)">
+        <div class="info-title" style="color:var(--accent2)">Aplicaciones</div>
+        Espejos retrovisores, cámaras de seguridad, espejos de tiendas, retrovisores de bicicleta.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── LEYES Y FÓRMULAS ─── -->
+  <div class="section-label">Fórmulas Clave</div>
+  <h2>Ecuaciones Fundamentales</h2>
+
+  <div class="law-block">
+    <strong>🔵 Fórmula de Gauss-Descartes (ecuación de los espejos):</strong><br>
+    Relaciona las distancias objeto (p), imagen (q) y focal (f):
+    <br><br><span class="formula-inline">1/p + 1/q = 1/f = 2/r</span>
+  </div>
+
+  <div class="law-block">
+    <strong>🟡 Aumento lateral A:</strong><br>
+    Indica el tamaño relativo y orientación de la imagen respecto al objeto:
+    <br><br><span class="formula-inline">A = hᵢ/h₀ = −q/p</span>
+  </div>
+
+  <div class="info-box">
+    <div class="info-title">Convención de signos (Reflejo Gauss)</div>
+    <strong>p > 0:</strong> objeto real (frente al espejo) &nbsp;|&nbsp;
+    <strong>q > 0:</strong> imagen real (frente al espejo) &nbsp;|&nbsp;
+    <strong>q &lt; 0:</strong> imagen virtual (detrás del espejo) &nbsp;|&nbsp;
+    <strong>A &lt; 0:</strong> imagen invertida &nbsp;|&nbsp;
+    <strong>A > 0:</strong> imagen derecha
+  </div>
+
+  <div class="info-box" style="border-color:rgba(255,209,102,0.3)">
+    <div class="info-title" style="color:var(--accent4)">Rayos notables (trazado geométrico)</div>
+    <strong>1. Rayo paralelo al eje →</strong> se refleja pasando por el foco F.<br>
+    <strong>2. Rayo que pasa por el foco →</strong> se refleja paralelo al eje principal.<br>
+    <strong>3. Rayo que pasa por el centro C →</strong> el rayo reflejado coincide con el incidente.<br>
+    <strong>4. Rayo dirigido al vértice V →</strong> se refleja simétricamente respecto al eje.
+  </div>
+</div>
+
+<!-- ════════════════ SIM 1: ESPEJO CÓNCAVO ════════════════ -->
+<div class="page" style="padding-top:0">
+  <div class="section-label">Simulación Interactiva</div>
+  <h2>Espejo Cóncavo</h2>
+  <p>Ajusta la posición del objeto y observa en tiempo real cómo se forma la imagen. Los <strong style="color:#ffd166">rayos notables</strong> muestran el trazado geométrico completo.</p>
+
+  <div class="sim-section">
+    <div class="sim-header">
+      <span class="sim-tag">🔬 Simulación 1</span>
+      <strong>Espejo Cóncavo — Trazado de Rayos</strong>
+    </div>
+    <canvas id="concaveCanvas" width="760" height="380"></canvas>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Posición objeto p:</label>
+        <input type="range" id="concaveP" min="30" max="550" value="250">
+        <span class="val-badge" id="concavePVal">250</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Focal f:</label>
+        <input type="range" id="concaveF" min="80" max="220" value="140">
+        <span class="val-badge" id="concaveFVal">140</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Altura objeto:</label>
+        <input type="range" id="concaveH" min="20" max="100" value="60">
+        <span class="val-badge" id="concaveHVal">60</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn active" id="btnRaysC" onclick="toggleRaysC()">Rayos notables ON</button>
+      <button class="btn" id="btnVirtC" onclick="toggleVirtC()">Prolongaciones OFF</button>
+    </div>
+    <div class="readout" id="concaveReadout"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── CASOS CÓNCAVO ─── -->
+  <div class="section-label">Formación de Imágenes</div>
+  <h2>Casos del Espejo Cóncavo</h2>
+  <p>Según la posición del objeto, el espejo cóncavo produce cinco tipos distintos de imagen. Usa las pestañas para explorar cada caso.</p>
+
+  <div class="cases-tabs">
+    <button class="case-tab active" onclick="showCase('c',0)">Caso 1: p > 2f</button>
+    <button class="case-tab" onclick="showCase('c',1)">Caso 2: p = 2f</button>
+    <button class="case-tab" onclick="showCase('c',2)">Caso 3: f &lt; p &lt; 2f</button>
+    <button class="case-tab" onclick="showCase('c',3)">Caso 4: p = f</button>
+    <button class="case-tab" onclick="showCase('c',4)">Caso 5: p &lt; f</button>
+  </div>
+
+  <div id="case-c-0" class="case-panel active">
+    <p>El objeto está <strong>más allá del centro de curvatura</strong> (entre C y el infinito).</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">Real</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">Invertida (A &lt; 0)</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Menor que el objeto (|A| &lt; 1)</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">Entre F y C</div></div>
+    </div>
+  </div>
+  <div id="case-c-1" class="case-panel">
+    <p>El objeto está <strong>exactamente en el centro de curvatura</strong>.</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">Real</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">Invertida (A &lt; 0)</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Igual al objeto (|A| = 1)</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">En el mismo punto C</div></div>
+    </div>
+  </div>
+  <div id="case-c-2" class="case-panel">
+    <p>El objeto está <strong>entre C y el foco F</strong>.</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">Real</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">Invertida (A &lt; 0)</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Mayor que el objeto (|A| &gt; 1)</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">Más allá del centro C</div></div>
+    </div>
+  </div>
+  <div id="case-c-3" class="case-panel">
+    <p>El objeto está <strong>exactamente en el foco F</strong>.</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">No se forma imagen</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">—</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Imagen en el infinito</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">p → ∞ (rayos paralelos)</div></div>
+    </div>
+  </div>
+  <div id="case-c-4" class="case-panel">
+    <p>El objeto está <strong>entre el foco F y el vértice V</strong>.</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">Virtual</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">Derecha (A &gt; 0)</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Mayor que el objeto (|A| &gt; 1)</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">Detrás del espejo</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TEORÍA ESPEJO CONVEXO ════════════════ -->
+<div class="page" style="padding-top:0">
+  <div class="section-label">Teoría · Espejo Convexo</div>
+  <h2>Espejos Convexos (Divergentes)</h2>
+  <p>Los espejos convexos son aquellos espejos esféricos donde la parte reflectante se encuentra en la superficie <strong>externa</strong> de la esfera. También se les llama <strong>espejos divergentes</strong> porque hacen que los rayos de luz se dispersen al reflejarse.</p>
+  <p>Una propiedad fundamental es que los espejos convexos <strong>solamente producen imágenes virtuales</strong>; además, estas imágenes siempre son de menor tamaño que el objeto y se forman detrás del espejo, sin importar dónde se coloque el objeto.</p>
+
+  <div class="theory-grid">
+    <div class="theory-card" style="--card-accent:#ff6b9d">
+      <div class="card-icon">🔮</div>
+      <h3>Foco Virtual</h3>
+      <p>En el espejo convexo, los rayos reflejados <strong>divergen</strong> entre sí. Sus prolongaciones hacia atrás (detrás del espejo) convergen en un punto llamado <strong>foco virtual F</strong>.</p>
+      <p>Por este motivo, la distancia focal <span class="formula-inline">f</span> se considera <strong>negativa</strong> (f &lt; 0). El foco no existe físicamente frente al espejo.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#a78bfa">
+      <div class="card-icon">👁️</div>
+      <h3>Campo visual ampliado</h3>
+      <p>Aunque la imagen es siempre reducida, el espejo convexo ofrece un <strong>campo visual mucho más amplio</strong> que un espejo plano del mismo tamaño. Por eso se usa en espejos retrovisores y cámaras de seguridad.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Rayos Notables · Convexo</div>
+  <h2>Trazado de Rayos en el Espejo Convexo</h2>
+  <p>Al igual que en los cóncavos, existen 4 rayos notables para espejos convexos que permiten hallar las imágenes trazando sus <strong>prolongaciones detrás del espejo</strong>.</p>
+
+  <div class="theory-grid">
+    <div class="theory-card" style="--card-accent:#ffd166">
+      <div class="card-icon">1️⃣</div>
+      <h3>Rayo paralelo al eje</h3>
+      <p>Incide en el espejo paralelo al eje principal. Se refleja divergiendo, de modo que su <strong>prolongación</strong> hacia atrás pasa por el foco virtual F.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#4ecdc4">
+      <div class="card-icon">2️⃣</div>
+      <h3>Rayo focal</h3>
+      <p>Incide en el espejo <strong>dirigiéndose hacia el foco virtual F</strong> (detrás del espejo). Se refleja paralelo al eje principal.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#7c8cff">
+      <div class="card-icon">3️⃣</div>
+      <h3>Rayo central</h3>
+      <p>Incide dirigiéndose hacia el <strong>centro de curvatura C</strong> (detrás del espejo). El rayo reflejado coincide con el incidente, volviendo sobre sí mismo.</p>
+    </div>
+    <div class="theory-card" style="--card-accent:#ff6b9d">
+      <div class="card-icon">4️⃣</div>
+      <h3>Rayo hacia el vértice</h3>
+      <p>Incide dirigiéndose al <strong>vértice V</strong>. El rayo reflejado es simétrico respecto al eje principal, con igual ángulo de incidencia y de reflexión.</p>
+    </div>
+  </div>
+
+  <div class="info-box" style="border-color:rgba(255,107,157,0.3); margin-top:1rem">
+    <div class="info-title" style="color:var(--accent2)">⚠️ Diferencia clave respecto al espejo cóncavo</div>
+    En el espejo cóncavo, los rayos reflejados se cruzan físicamente formando una imagen real. En el espejo convexo, los rayos reflejados <strong>divergen</strong> y nunca se cruzan frente al espejo. La imagen se localiza donde se cortan las <strong>prolongaciones virtuales</strong> (líneas discontinuas detrás del espejo), por eso la imagen es siempre virtual.
+  </div>
+</div>
+
+<!-- ════════════════ SIM 2: ESPEJO CONVEXO ════════════════ -->
+<div class="page" style="padding-top:0">
+  <div class="section-label">Simulación Interactiva</div>
+  <h2>Simulación — Espejo Convexo</h2>
+  <p>Comprueba experimentalmente cómo un espejo convexo <strong>siempre</strong> forma una imagen virtual, derecha y de menor tamaño sin importar dónde se coloque el objeto. Aleja el objeto al máximo y nota el tamaño de la imagen; luego acércalo y observa cómo crece, aunque nunca supera el tamaño original.</p>
+
+  <div class="sim-section" style="--glow1:rgba(255,107,157,0.25)">
+    <div class="sim-header">
+      <span class="sim-tag" style="background:rgba(255,107,157,0.15);border-color:rgba(255,107,157,0.3);color:var(--accent2)">🔬 Simulación 2</span>
+      <strong>Espejo Convexo — Trazado de Rayos con Prolongaciones Virtuales</strong>
+    </div>
+    <canvas id="convexCanvas" width="760" height="380"></canvas>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Posición objeto p:</label>
+        <input type="range" id="convexP" min="30" max="450" value="200" style="accent-color:var(--accent2)">
+        <span class="val-badge" id="convexPVal" style="color:var(--accent2)">200</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Focal |f|:</label>
+        <input type="range" id="convexF" min="60" max="200" value="120" style="accent-color:var(--accent2)">
+        <span class="val-badge" id="convexFVal" style="color:var(--accent2)">120</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Altura objeto:</label>
+        <input type="range" id="convexH" min="20" max="100" value="60" style="accent-color:var(--accent2)">
+        <span class="val-badge" id="convexHVal" style="color:var(--accent2)">60</span>
+      </div>
+    </div>
+    <div class="readout" id="convexReadout"></div>
+  </div>
+
+  <div class="theory-card" style="--card-accent:#ff6b9d; margin-top:1.5rem">
+    <div class="card-icon">ℹ️</div>
+    <h3>Caso único del espejo convexo</h3>
+    <p>A diferencia del cóncavo, el espejo convexo <strong>siempre</strong> produce el mismo tipo de imagen sin importar dónde se coloque el objeto:</p>
+    <div class="case-info">
+      <div class="case-prop"><div class="label">Naturaleza</div><div class="value">Virtual</div></div>
+      <div class="case-prop"><div class="label">Orientación</div><div class="value">Derecha (A &gt; 0)</div></div>
+      <div class="case-prop"><div class="label">Tamaño</div><div class="value">Reducida (|A| &lt; 1)</div></div>
+      <div class="case-prop"><div class="label">Posición</div><div class="value">Detrás del espejo (q &lt; 0)</div></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── EJEMPLOS RESUELTOS ─── -->
+  <div class="section-label">Ejemplos Resueltos</div>
+  <h2>Aplicaciones Prácticas</h2>
+
+  <!-- Ejemplo 1: Espejo odontológico -->
+  <div class="sim-section" style="--glow1:rgba(78,205,196,0.15); margin-bottom:2rem">
+    <div class="sim-header">
+      <span class="sim-tag" style="background:rgba(78,205,196,0.15);border-color:rgba(78,205,196,0.3);color:var(--accent3)">🦷 Ejemplo 1</span>
+      <strong>Espejo Odontológico</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem">
+      <div>
+        <div class="info-box" style="border-color:rgba(255,209,102,0.3);margin-bottom:1rem">
+          <div class="info-title" style="color:var(--accent4)">Problema</div>
+          Un dentista usa un espejo para examinar un diente. El diente se encuentra a <strong>1,00 cm</strong> frente al espejo y la imagen se forma <strong>10,0 cm detrás</strong> del espejo.<br><br>
+          Determinar: a) El radio de curvatura. &nbsp; b) El aumento de la imagen.
+        </div>
+        <div class="info-box" style="border-color:rgba(78,205,196,0.3)">
+          <div class="info-title" style="color:var(--accent3)">Identificación</div>
+          La imagen está ampliada → espejo <strong>cóncavo</strong>.<br>
+          Imagen detrás del espejo → <strong>virtual</strong> → q es negativa.<br><br>
+          • p = 1,00 cm &nbsp;|&nbsp; q = −10,0 cm
+        </div>
+      </div>
+      <div>
+        <div class="info-box" style="border-color:rgba(124,140,255,0.3)">
+          <div class="info-title">Desarrollo matemático</div>
+          <span class="formula-inline">f = p·q / (p+q) = (1)(−10) / (1−10) ≈ 1,11 cm</span><br><br>
+          <strong>a) Radio de curvatura:</strong><br>
+          <span class="formula-inline">R = 2·f = 2(1,11) = 2,22 cm</span><br><br>
+          <strong>b) Aumento lateral:</strong><br>
+          <span class="formula-inline">A = −q/p = −(−10)/1 = 10</span><br><br>
+          Imagen <strong>derecha (A &gt; 0)</strong> y <strong>diez veces más grande</strong> (|A| = 10).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ejemplo 2: Espejo y pantalla -->
+  <div class="sim-section" style="--glow1:rgba(255,209,102,0.15)">
+    <div class="sim-header">
+      <span class="sim-tag" style="background:rgba(255,209,102,0.15);border-color:rgba(255,209,102,0.3);color:var(--accent4)">🖥️ Ejemplo 2</span>
+      <strong>Espejo y Pantalla — Proyección a 5 metros</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem">
+      <div>
+        <div class="info-box" style="border-color:rgba(255,209,102,0.3);margin-bottom:1rem">
+          <div class="info-title" style="color:var(--accent4)">Problema</div>
+          Con un espejo esférico se forma, sobre una pantalla colocada a <strong>5,00 m del objeto</strong>, una imagen de <strong>cinco veces el tamaño del objeto</strong>.<br><br>
+          a) Describe el tipo de espejo. &nbsp; b) ¿Dónde debe colocarse el espejo respecto al objeto?
+        </div>
+        <div class="info-box" style="border-color:rgba(78,205,196,0.3);margin-bottom:1rem">
+          <div class="info-title" style="color:var(--accent3)">Inciso a)</div>
+          Para proyectarse en una pantalla, la imagen debe ser <strong>real</strong>. Solo los <strong>espejos cóncavos</strong> forman imágenes reales. Como |A| = 5, el objeto está entre C y F.
+        </div>
+        <div class="info-box" style="border-color:rgba(124,140,255,0.3)">
+          <div class="info-title">Aumento (invertida)</div>
+          <span class="formula-inline">A = −q/p = −5 → q = 5p</span><br>
+          <span class="formula-inline">d = q − p = 5p − p = 4p</span><br>
+          <span class="formula-inline">p = d/4 = 5,00/4 = 1,25 m</span><br><br>
+          <strong style="color:var(--accent3)">El espejo se coloca a 1,25 m frente al objeto.</strong>
+        </div>
+      </div>
+      <div>
+        <div class="info-box" style="border-color:rgba(255,107,157,0.3)">
+          <div class="info-title" style="color:var(--accent2)">Cálculos finales</div>
+          q = 5(1,25) = 6,25 m<br><br>
+          <span class="formula-inline">f = p·q/(p+q) = (1,25·6,25)/7,5 ≈ 1,042 m</span><br><br>
+          <span class="formula-inline">R = 2·f ≈ 2,083 m</span><br><br>
+          <strong>Conclusión:</strong> Con un espejo de ~2,1 m de curvatura se logra ampliar la proyección un <strong>500%</strong> a 5 m de distancia.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SIM 3: CALCULADORA ════════════════ -->
+<div class="page" style="padding-top:0">
+  <div class="section-label">Herramienta de Cálculo</div>
+  <h2>Calculadora de Espejos</h2>
+  <p>Ingresa los datos conocidos y obtén automáticamente las propiedades completas de la imagen formada.</p>
+
+  <div class="sim-section">
+    <div class="sim-header">
+      <span class="sim-tag">🧮 Calculadora</span>
+      <strong>Fórmula de Gauss-Descartes</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.2rem">
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.4rem">Tipo de espejo</label>
+        <select id="calcType" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;color:var(--text);font-size:0.9rem;outline:none;cursor:pointer">
+          <option value="concave">Cóncavo (f &gt; 0)</option>
+          <option value="convex">Convexo (f &lt; 0)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.4rem">Distancia focal f (cm)</label>
+        <input type="number" id="calcF" value="20" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;color:var(--text);font-size:0.9rem;outline:none">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.4rem">Distancia objeto p (cm)</label>
+        <input type="number" id="calcP" value="40" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;color:var(--text);font-size:0.9rem;outline:none">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.4rem">Altura objeto h₀ (cm)</label>
+        <input type="number" id="calcHo" value="5" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;color:var(--text);font-size:0.9rem;outline:none">
+      </div>
+    </div>
+    <button onclick="calculate()" style="background:linear-gradient(135deg,var(--accent1),var(--accent2));border:none;border-radius:10px;padding:0.7rem 2rem;color:white;font-size:0.95rem;font-weight:700;cursor:pointer;letter-spacing:0.05em">
+      ⚡ Calcular
+    </button>
+    <div id="calcResult" style="margin-top:1.2rem;display:none">
+      <div class="readout" id="calcReadout" style="flex-direction:column;gap:0.5rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TABLA DE FÓRMULAS ════════════════ -->
+<div class="page" style="padding-top:0">
+  <div class="section-label">Referencia Rápida</div>
+  <h2>Tabla de Fórmulas</h2>
+
+  <table class="formula-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Fórmula</th>
+        <th>Variables</th>
+        <th>Notas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ecuación de Gauss-Descartes</td>
+        <td class="formula-cell">1/p + 1/q = 1/f</td>
+        <td>p: dist. objeto, q: dist. imagen, f: focal</td>
+        <td>Válida para espejos esféricos paraxiales</td>
+      </tr>
+      <tr>
+        <td>Relación focal-radio</td>
+        <td class="formula-cell">f = r/2</td>
+        <td>r: radio de curvatura</td>
+        <td>Aproximación paraxial (ángulos pequeños)</td>
+      </tr>
+      <tr>
+        <td>Fórmula completa</td>
+        <td class="formula-cell">1/p + 1/q = 2/r</td>
+        <td>r: radio de curvatura</td>
+        <td>Derivada de la anterior</td>
+      </tr>
+      <tr>
+        <td>Aumento lateral</td>
+        <td class="formula-cell">A = hᵢ/h₀ = −q/p</td>
+        <td>hᵢ: altura imagen, h₀: altura objeto</td>
+        <td>A &lt; 0 → invertida; A &gt; 0 → derecha</td>
+      </tr>
+      <tr>
+        <td>Altura de la imagen</td>
+        <td class="formula-cell">hᵢ = h₀ · (−q/p)</td>
+        <td>—</td>
+        <td>Derivada del aumento lateral</td>
+      </tr>
+      <tr>
+        <td>Distancia imagen</td>
+        <td class="formula-cell">q = pf / (p − f)</td>
+        <td>—</td>
+        <td>Despejando q de Gauss-Descartes</td>
+      </tr>
+      <tr>
+        <td>Signo focal cóncavo</td>
+        <td class="formula-cell">f &gt; 0</td>
+        <td>—</td>
+        <td>Convergente; foco real frente al espejo</td>
+      </tr>
+      <tr>
+        <td>Signo focal convexo</td>
+        <td class="formula-cell">f &lt; 0</td>
+        <td>—</td>
+        <td>Divergente; foco virtual detrás del espejo</td>
+      </tr>
+      <tr>
+        <td>Número de imágenes (espejos angulares)</td>
+        <td class="formula-cell">N = 360°/θ (si impar)<br>N = 360°/θ − 1 (si par)</td>
+        <td>θ: ángulo entre espejos</td>
+        <td>Sistema de dos espejos planos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+
+  <!-- ─── GLOSARIO ─── -->
+  <div class="section-label">Vocabulario Óptico</div>
+  <h2>Glosario</h2>
+
+  <div class="glossary-grid">
+    <div class="gloss-item">
+      <div class="gloss-term">Reflexión especular</div>
+      <div class="gloss-def">Reflexión sobre superficies lisas donde los rayos reflejados son paralelos entre sí. Cumple estrictamente las leyes de la reflexión.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Reflexión difusa</div>
+      <div class="gloss-def">Reflexión sobre superficies rugosas donde los rayos se dispersan en todas direcciones. No forma imágenes definidas.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Imagen real</div>
+      <div class="gloss-def">Imagen formada por la intersección efectiva de rayos reflejados (q &gt; 0). Se puede proyectar sobre una pantalla.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Imagen virtual</div>
+      <div class="gloss-def">Imagen formada por la prolongación de los rayos reflejados (q &lt; 0). No puede proyectarse sobre una pantalla; existe detrás del espejo.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Rayo paraxial</div>
+      <div class="gloss-def">Rayo que forma un ángulo muy pequeño con el eje principal. La óptica paraxial (aproximación de ángulo pequeño: tan θ ≈ θ) permite deducir la fórmula de Gauss-Descartes.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Aberración esférica</div>
+      <div class="gloss-def">Defecto óptico por el cual los rayos periféricos (no paraxiales) no convergen exactamente en el mismo punto focal que los rayos centrales.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Aumento lateral A</div>
+      <div class="gloss-def">Cociente entre la altura de la imagen y la del objeto. Indica tamaño relativo (|A| vs 1) y orientación (signo de A).</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Principio de Fermat</div>
+      <div class="gloss-def">La luz viaja entre dos puntos siguiendo el camino que minimiza (o hace estacionario) el tiempo de recorrido. Explica las leyes de reflexión y refracción.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Foco real</div>
+      <div class="gloss-def">Punto del eje principal donde convergen físicamente los rayos reflejados. Solo existe en espejos cóncavos (f &gt; 0).</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Foco virtual</div>
+      <div class="gloss-def">Punto imaginario detrás del espejo del que parecen divergir los rayos reflejados. Característico del espejo convexo (f &lt; 0).</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Normal a la superficie</div>
+      <div class="gloss-def">Recta perpendicular a la superficie en el punto de incidencia. Los ángulos de incidencia y reflexión se miden respecto a ella.</div>
+    </div>
+    <div class="gloss-item">
+      <div class="gloss-term">Eje óptico principal</div>
+      <div class="gloss-def">Línea de simetría del espejo que pasa por el vértice V y el centro de curvatura C. Todos los cálculos de distancias se toman sobre este eje.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p><strong>Espejos Esféricos: Cóncavo y Convexo</strong> · Cuadernillo Interactivo</p>
+  <p style="margin-top:0.4rem">Elaborado por: Mariana Alzate · Manuela Foronda · Camila Marín · Eddier Bohórquez</p>
+  <p style="margin-top:0.5rem;font-size:0.75rem;opacity:0.5">Física · Óptica Geométrica · 2025</p>
+</footer>
+
+<script>
+// ═══════════════ STARS ═══════════════
+(function() {
+  const s = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    el.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;--delay:${Math.random()*5}s;--op:${0.2+Math.random()*0.7};
+      width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;`;
+    s.appendChild(el);
+  }
+})();
+
+// ═══════════════ CASES ═══════════════
+function showCase(type, idx) {
+  const tabs = document.querySelectorAll('.case-tab');
+  const panels = document.querySelectorAll('[id^="case-c-"]');
+  tabs.forEach((t,i) => t.classList.toggle('active', i === idx));
+  panels.forEach((p,i) => p.classList.toggle('active', i === idx));
+}
+
+// ═══════════════ CANVAS HELPERS ═══════════════
+function clearCanvas(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, dashed=false) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1.8;
+  if (dashed) ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.setLineDash([]);
+  const angle = Math.atan2(y2-y1, x2-x1);
+  const size = 7;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-size*Math.cos(angle-0.4), y2-size*Math.sin(angle-0.4));
+  ctx.lineTo(x2-size*Math.cos(angle+0.4), y2-size*Math.sin(angle+0.4));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawObj(ctx, x, y, h, color='#4ecdc4') {
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y-h); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x,y-h); ctx.lineTo(x-5,y-h+8); ctx.lineTo(x+5,y-h+8);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function label(ctx, text, x, y, color='#8892b0', size=11) {
+  ctx.save();
+  ctx.fillStyle = color; ctx.font = `${size}px DM Sans, sans-serif`;
+  ctx.fillText(text, x, y); ctx.restore();
+}
+
+// ═══════════════ CONCAVE SIM ═══════════════
+const cc = document.getElementById('concaveCanvas');
+const cctx = cc.getContext('2d');
+let showRaysC = true, showVirtC = false;
+
+function toggleRaysC() {
+  showRaysC = !showRaysC;
+  document.getElementById('btnRaysC').textContent = `Rayos notables ${showRaysC?'ON':'OFF'}`;
+  document.getElementById('btnRaysC').classList.toggle('active', showRaysC);
+  drawConcave();
+}
+function toggleVirtC() {
+  showVirtC = !showVirtC;
+  document.getElementById('btnVirtC').textContent = `Prolongaciones ${showVirtC?'ON':'OFF'}`;
+  document.getElementById('btnVirtC').classList.toggle('active', showVirtC);
+  drawConcave();
+}
+
+function drawConcave() {
+  const W = cc.width, H = cc.height;
+  const cx = cctx;
+  clearCanvas(cx, W, H);
+
+  const pRaw = +document.getElementById('concaveP').value;
+  const f = +document.getElementById('concaveF').value;
+  const hObj = +document.getElementById('concaveH').value;
+
+  document.getElementById('concavePVal').textContent = pRaw;
+  document.getElementById('concaveFVal').textContent = f;
+  document.getElementById('concaveHVal').textContent = hObj;
+
+  const mirrorX = W - 60;
+  const axisY = H / 2;
+  const scale = 1;
+
+  // Map positions: mirror at mirrorX, axis at axisY
+  const objX = mirrorX - pRaw;
+  const fX = mirrorX - f;
+  const cX = mirrorX - 2*f;
+
+  // draw axis
+  cx.save();
+  cx.strokeStyle = 'rgba(255,255,255,0.15)'; cx.lineWidth = 1;
+  cx.setLineDash([6,4]);
+  cx.beginPath(); cx.moveTo(0, axisY); cx.lineTo(W, axisY); cx.stroke();
+  cx.setLineDash([]); cx.restore();
+
+  // draw mirror (arc)
+  cx.save();
+  cx.strokeStyle = '#7c8cff'; cx.lineWidth = 3;
+  cx.beginPath();
+  cx.arc(mirrorX + 2*f - 15, axisY, 2*f - 15, Math.PI/2 - 0.6, Math.PI/2 + 0.6 + Math.PI);
+  cx.stroke();
+  cx.restore();
+
+  // mirror line visual
+  cx.save();
+  cx.strokeStyle = 'rgba(124,140,255,0.4)'; cx.lineWidth = 1;
+  cx.setLineDash([3,3]);
+  cx.beginPath(); cx.moveTo(mirrorX, axisY-140); cx.lineTo(mirrorX, axisY+140); cx.stroke();
+  cx.setLineDash([]); cx.restore();
+
+  // labels
+  label(cx, 'V', mirrorX-8, axisY+18, '#7c8cff', 12);
+  label(cx, 'F', fX-5, axisY+18, '#ffd166', 12);
+  label(cx, 'C', cX-5, axisY+18, '#4ecdc4', 12);
+
+  // F and C dots
+  [fX, cX].forEach((x,i) => {
+    cx.save(); cx.fillStyle = i===0?'#ffd166':'#4ecdc4';
+    cx.beginPath(); cx.arc(x, axisY, 5, 0, Math.PI*2); cx.fill(); cx.restore();
+  });
+
+  // calculate image
+  let q = (pRaw * f) / (pRaw - f);
+  const isVirt = q < 0;
+  const hImg = -(q / pRaw) * hObj;
+  const A = -q / pRaw;
+
+  const imgX = mirrorX - q;
+  const imgRealX = mirrorX + Math.abs(q) * (isVirt ? 1 : 0) - (isVirt ? 0 : q);
+
+  // Rays
+  if (showRaysC && objX > 10) {
+    const topY = axisY - hObj;
+    const tipX = objX, tipY = topY;
+
+    // Ray 1: parallel → through F
+    if (showRaysC) {
+      drawArrow(cx, tipX, tipY, mirrorX, tipY, '#ffd166');
+      // reflect through F
+      if (!isVirt && imgX > 0 && imgX < W) {
+        drawArrow(cx, mirrorX, tipY, imgX, axisY-hImg, '#ffd166');
+      } else {
+        const slope = (axisY - tipY) / (fX - mirrorX);
+        const endX = 20;
+        const endY = tipY + slope * (endX - mirrorX);
+        drawArrow(cx, mirrorX, tipY, endX, endY, '#ffd166');
+        if (showVirtC) {
+          drawArrow(cx, mirrorX, tipY, mirrorX + 200, tipY - 200 * slope, '#ffd166', true);
+        }
+      }
+    }
+
+    // Ray 2: through F → parallel
+    if (showRaysC && fX > tipX) {
+      const slope2 = (tipY - axisY) / (tipX - fX);
+      drawArrow(cx, tipX, tipY, mirrorX, axisY + slope2*(mirrorX - tipX), '#ff6b9d');
+      const refY = axisY + slope2*(mirrorX - tipX);
+      if (!isVirt && imgX > 0) {
+        drawArrow(cx, mirrorX, refY, imgX, axisY-hImg, '#ff6b9d');
+      } else {
+        drawArrow(cx, mirrorX, refY, 20, refY, '#ff6b9d');
+      }
+    }
+
+    // Ray 3: through C → same angle back
+    if (showRaysC && cX > tipX) {
+      drawArrow(cx, tipX, tipY, mirrorX, axisY, '#4ecdc4');
+      if (!isVirt && imgX > 0) {
+        drawArrow(cx, mirrorX, axisY, imgX, axisY-hImg, '#4ecdc4');
+      }
+    }
+
+    // Virtual image extensions
+    if (isVirt && showVirtC && imgX > mirrorX) {
+      cx.save(); cx.strokeStyle='rgba(255,107,157,0.5)'; cx.setLineDash([5,4]); cx.lineWidth=1.5;
+      cx.beginPath(); cx.moveTo(mirrorX, axisY-(hImg)); cx.lineTo(imgX+40, axisY-hImg*(1.4)); cx.stroke();
+      cx.setLineDash([]); cx.restore();
+    }
+  }
+
+  // Object
+  if (objX > 5) drawObj(cx, objX, axisY, hObj, '#4ecdc4');
+  label(cx, 'Objeto', objX-20, axisY+22, '#4ecdc4', 11);
+
+  // Image
+  if (!isVirt && imgX > 10 && imgX < mirrorX) {
+    drawObj(cx, imgX, axisY, hImg, '#ff6b9d');
+    label(cx, "Imagen", imgX-20, axisY + (hImg>0?22:-8), '#ff6b9d', 11);
+  } else if (isVirt) {
+    const vImgX = mirrorX - q; // q < 0, so mirrorX + |q|
+    if (vImgX < W - 10) {
+      cx.save(); cx.globalAlpha = 0.55;
+      drawObj(cx, vImgX, axisY, -hImg, '#ff6b9d');
+      cx.restore();
+      label(cx, "Imagen virtual", vImgX-30, axisY+22, '#ff6b9d', 11);
+    }
+  }
+
+  // Readout
+  const nature = isVirt ? '🔷 Virtual' : '🔴 Real';
+  const orient = A > 0 ? '⬆ Derecha' : '⬇ Invertida';
+  const size = Math.abs(A) > 1 ? 'Ampliada' : Math.abs(A) < 1 ? 'Reducida' : 'Igual';
+  document.getElementById('concaveReadout').innerHTML =
+    `<span>q = <strong>${isFinite(q)?q.toFixed(1):'∞'}</strong> px</span>
+     <span>A = <strong>${isFinite(A)?A.toFixed(3):'∞'}</strong></span>
+     <span>Naturaleza: <strong>${nature}</strong></span>
+     <span>Orientación: <strong>${orient}</strong></span>
+     <span>Tamaño: <strong>${size}</strong></span>`;
+}
+
+['concaveP','concaveF','concaveH'].forEach(id => document.getElementById(id).addEventListener('input', drawConcave));
+drawConcave();
+
+// ═══════════════ CONVEX SIM ═══════════════
+const cv = document.getElementById('convexCanvas');
+const cvtx = cv.getContext('2d');
+
+function drawConvex() {
+  const W = cv.width, H = cv.height;
+  const cx = cvtx;
+  clearCanvas(cx, W, H);
+
+  const pRaw = +document.getElementById('convexP').value;
+  const fAbs = +document.getElementById('convexF').value;
+  const hObj = +document.getElementById('convexH').value;
+  const f = -fAbs; // convex: f < 0
+
+  document.getElementById('convexPVal').textContent = pRaw;
+  document.getElementById('convexFVal').textContent = fAbs;
+  document.getElementById('convexHVal').textContent = hObj;
+
+  const mirrorX = 80;
+  const axisY = H / 2;
+
+  // axis
+  cx.save();
+  cx.strokeStyle = 'rgba(255,255,255,0.15)'; cx.lineWidth = 1; cx.setLineDash([6,4]);
+  cx.beginPath(); cx.moveTo(0, axisY); cx.lineTo(W, axisY); cx.stroke();
+  cx.setLineDash([]); cx.restore();
+
+  // convex mirror arc (bulging right)
+  cx.save();
+  cx.strokeStyle = '#ff6b9d'; cx.lineWidth = 3;
+  cx.beginPath();
+  cx.arc(mirrorX - fAbs + 15, axisY, fAbs - 15, -0.6, 0.6);
+  cx.stroke();
+  cx.restore();
+
+  // mirror line
+  cx.save();
+  cx.strokeStyle = 'rgba(255,107,157,0.3)'; cx.lineWidth = 1; cx.setLineDash([3,3]);
+  cx.beginPath(); cx.moveTo(mirrorX, axisY-140); cx.lineTo(mirrorX, axisY+140); cx.stroke();
+  cx.setLineDash([]); cx.restore();
+
+  // virtual F and C (behind mirror, left of mirrorX)
+  const fX = mirrorX - fAbs; // behind mirror (left)
+  const cX = mirrorX - 2*fAbs;
+  label(cx, 'V', mirrorX+5, axisY+18, '#ff6b9d', 12);
+  label(cx, 'F (virtual)', fX-70, axisY+18, '#ffd16690', 11);
+
+  cx.save(); cx.fillStyle='rgba(255,209,102,0.5)';
+  cx.beginPath(); cx.arc(fX, axisY, 4, 0, Math.PI*2); cx.fill(); cx.restore();
+
+  // object (to the right of mirror)
+  const objX = mirrorX + pRaw;
+  if (objX < W - 10) drawObj(cx, objX, axisY, hObj, '#4ecdc4');
+  label(cx, 'Objeto', objX-20, axisY+22, '#4ecdc4', 11);
+
+  // image calculation: 1/q = 1/f - 1/p → q = pf/(p-f), f<0
+  const q = (pRaw * f) / (pRaw - f); // q will be negative → virtual, behind mirror
+  const A = -q / pRaw;
+  const imgX = mirrorX + q; // q negative → imgX < mirrorX → behind mirror
+
+  // rays (simplified for convex)
+  const tipX = objX, tipY = axisY - hObj;
+
+  // Ray 1: parallel → diverges as if from F
+  drawArrow(cx, tipX, tipY, mirrorX, tipY, '#ffd166');
+  // After reflection, diverges as if from virtual F
+  const r1slope = (tipY - axisY) / (mirrorX - fX);
+  drawArrow(cx, mirrorX, tipY, mirrorX - 250, tipY + 250*r1slope, '#ffd166');
+  cx.save(); cx.globalAlpha=0.35; cx.strokeStyle='#ffd166'; cx.lineWidth=1.2; cx.setLineDash([5,4]);
+  cx.beginPath(); cx.moveTo(mirrorX, tipY); cx.lineTo(fX, axisY); cx.stroke();
+  cx.setLineDash([]); cx.restore();
+
+  // Ray 2: aimed at V → symmetric reflection
+  const r2slope = (axisY - tipY) / (mirrorX - tipX);
+  drawArrow(cx, tipX, tipY, mirrorX, axisY, '#ff6b9d');
+  drawArrow(cx, mirrorX, axisY, mirrorX-200, axisY - 200*r2slope, '#ff6b9d');
+
+  // virtual image (behind mirror)
+  if (imgX > 5 && imgX < mirrorX) {
+    const hImg = A * hObj;
+    cx.save(); cx.globalAlpha=0.6;
+    drawObj(cx, imgX, axisY, hImg, '#ff6b9d');
+    cx.restore();
+    label(cx, 'Imagen virtual', imgX-40, axisY+22, '#ff6b9d', 11);
+  }
+
+  const nature = '🔷 Virtual';
+  const orient = '⬆ Derecha';
+  const sz = '🔽 Reducida';
+  document.getElementById('convexReadout').innerHTML =
+    `<span>q = <strong>${q.toFixed(1)}</strong> px</span>
+     <span>A = <strong>${A.toFixed(3)}</strong></span>
+     <span>Naturaleza: <strong>${nature}</strong></span>
+     <span>Orientación: <strong>${orient}</strong></span>
+     <span>Tamaño: <strong>${sz}</strong></span>`;
+}
+
+['convexP','convexF','convexH'].forEach(id => document.getElementById(id).addEventListener('input', drawConvex));
+drawConvex();
+
+// ═══════════════ CALCULADORA ═══════════════
+function calculate() {
+  const type = document.getElementById('calcType').value;
+  let f = parseFloat(document.getElementById('calcF').value);
+  const p = parseFloat(document.getElementById('calcP').value);
+  const ho = parseFloat(document.getElementById('calcHo').value);
+
+  if (type === 'convex') f = -Math.abs(f);
+  else f = Math.abs(f);
+
+  if (isNaN(f)||isNaN(p)||isNaN(ho)||p===0) return;
+
+  const q = (p*f)/(p-f);
+  const A = -q/p;
+  const hi = A * ho;
+  const r = 2*f;
+
+  const nature = q>0 ? '✅ Real (frente al espejo)' : '🔷 Virtual (detrás del espejo)';
+  const orient = A>0 ? '⬆ Derecha (mismo sentido que objeto)' : '⬇ Invertida (cabeza abajo)';
+  const size = Math.abs(A)>1 ? `📈 Ampliada (×${Math.abs(A).toFixed(2)})` :
+               Math.abs(A)<1 ? `📉 Reducida (×${Math.abs(A).toFixed(2)})` : '↔ Igual tamaño';
+
+  const el = document.getElementById('calcReadout');
+  el.innerHTML = `
+    <div style="color:var(--accent4);font-weight:700;font-size:1rem;margin-bottom:0.4rem">Resultados</div>
+    <span>Distancia imagen q = <strong>${isFinite(q)?q.toFixed(3):'∞'} cm</strong></span>
+    <span>Aumento lateral A = <strong>${isFinite(A)?A.toFixed(4):'∞'}</strong></span>
+    <span>Altura imagen hᵢ = <strong>${isFinite(hi)?hi.toFixed(3):'∞'} cm</strong></span>
+    <span>Radio de curvatura r = <strong>${Math.abs(r).toFixed(2)} cm</strong></span>
+    <span>Naturaleza: <strong>${nature}</strong></span>
+    <span>Orientación: <strong>${orient}</strong></span>
+    <span>Tamaño: <strong>${size}</strong></span>
+  `;
+  document.getElementById('calcResult').style.display='block';
+}
+
+// resize canvases to actual width
+function resizeCanvases() {
+  [cc, cv].forEach(canvas => {
+    const w = canvas.parentElement.clientWidth - 64;
+    canvas.width = Math.min(760, w);
+  });
+  drawConcave(); drawConvex();
+}
+window.addEventListener('resize', resizeCanvases);
+resizeCanvases();
+</script>
+</body>
+</html>
